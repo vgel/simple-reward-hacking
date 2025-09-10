@@ -28,7 +28,13 @@ export NCCL_IB_DISABLE=1
 export TORCH_NCCL_ENABLE_MONITORING=0
 export TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=0
 export TORCH_NCCL_BLOCKING_WAIT=1
+
+# Known working versions
+flash-attn==2.6.1
+vllm==0.8.5.post1
+verifiers==0.1.3.post0
 """
+
 
 def main(args):
     model_name = args.model
@@ -36,8 +42,12 @@ def main(args):
 
     model, tokenizer = vf.get_model_and_tokenizer(model_name)
     vf_env = vf.load_environment(env_id="vf-simple-reward-hacking", **env_args)
-    
-    run_name = "simple-reward-hack_" + model_name.split("/")[-1].lower()
+
+    run_name = (
+        "simple-reward-hack_"
+        + model_name.split("/")[-1].lower()
+        + (f"_{args.run_suffix}" if args.run_suffix else "")
+    )
 
     training_args = vf.grpo_defaults(run_name=run_name)
     training_args.num_iterations = 1
@@ -52,7 +62,7 @@ def main(args):
     training_args.eval_steps = 20
     training_args.mask_env_responses = True
     training_args.max_grad_norm = 0.1
-    training_args.beta = 0.0
+    training_args.beta = 0.002
 
     trainer = vf.GRPOTrainer(
         model=model,
@@ -60,12 +70,14 @@ def main(args):
         env=vf_env,
         args=training_args,
     )
-    vf_env._trainer = trainer # type: ignore
+    vf_env._trainer = trainer  # type: ignore
     trainer.train()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "-m", default="Qwen/Qwen2.5-7B-Instruct")
     parser.add_argument("--env-args", "-a", default="{}")
+    parser.add_argument("--run-suffix", "-r", default="")
     args = parser.parse_args()
     main(args)
