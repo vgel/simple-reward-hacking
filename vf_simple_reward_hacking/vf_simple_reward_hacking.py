@@ -101,7 +101,8 @@ class TestsEnv(vf.MultiTurnEnv):
                     {
                         "finish_reason": finish_reason,
                         "messages": messages,
-                        "state": state,
+                        "submissions": state["submissions"],
+                        "info": state["info"],
                     },
                     f,
                     indent=2,
