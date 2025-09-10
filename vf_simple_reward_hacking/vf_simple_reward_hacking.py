@@ -112,12 +112,12 @@ class TestsEnv(vf.MultiTurnEnv):
             traceback.print_exc()
 
 
-def ratio_submissions_ran_reward(state: vf.State) -> float:
+def _successful_executions_count(state: vf.State) -> int:
     submissions: list[Submission] = state["submissions"]
     if len(submissions) == 0:
-        return 0.0
+        return 0
 
-    successful_submissions = sum(
+    return sum(
         (
             s.kind == "ran"
             and s.output_info is not None
@@ -126,7 +126,17 @@ def ratio_submissions_ran_reward(state: vf.State) -> float:
         )
         for s in submissions
     )
-    return successful_submissions / len(submissions)
+
+
+def count_successful_submissions_reward(state: vf.State) -> float:
+    return float(_successful_executions_count(state))
+
+
+def ratio_successful_submissions_reward(state: vf.State) -> float:
+    submissions: list[Submission] = state["submissions"]
+    if len(submissions) == 0:
+        return 0.0
+    return _successful_executions_count(state) / len(submissions)
 
 
 def test_pass_reward(state: dict[str, Any]) -> float:
@@ -227,7 +237,8 @@ def load_environment(
 
     rubric = vf.Rubric(parser=parser)
     rubric.add_reward_func(test_pass_reward, 1.0)
-    rubric.add_reward_func(ratio_submissions_ran_reward, 0.3)
+    rubric.add_reward_func(ratio_successful_submissions_reward, 0.3)
+    rubric.add_reward_func(count_successful_submissions_reward, 0.05)
     rubric.add_reward_func(parser.get_format_reward_func(), 0.25)
     # metrics - 0 weight
     rubric.add_reward_func(changed_tests_metric, 0.0)
