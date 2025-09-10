@@ -60,6 +60,7 @@ def main(args):
         env=vf_env,
         args=training_args,
     )
+    vf_env._trainer = trainer # type: ignore
     trainer.train()
 
 if __name__ == "__main__":

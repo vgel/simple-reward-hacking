@@ -1,4 +1,7 @@
 import json
+import os
+import time
+import traceback
 from typing import Any
 
 from datasets import load_dataset, Dataset
@@ -15,6 +18,7 @@ class TestsEnv(vf.MultiTurnEnv):
         eval_dataset: Dataset,
         max_attempts: int,
         use_docker: bool,
+        save_completed_in_dir: str | None,
         **kwargs,
     ):
         super().__init__(
@@ -25,6 +29,7 @@ class TestsEnv(vf.MultiTurnEnv):
         )
         self.max_attempts = max_attempts
         self.use_docker = use_docker
+        self.save_completed_in_dir = save_completed_in_dir
 
     async def setup_state(self, state: vf.State, **kwargs) -> vf.State:
         state["scaffold"] = Scaffold.from_code(state["info"]["scaffold"])
@@ -41,8 +46,10 @@ class TestsEnv(vf.MultiTurnEnv):
         if last_output is not None and (
             last_output.test_pass_count > 0 and last_output.test_fail_count == 0
         ):
+            self.try_save_completed("tests_passed", messages, state)
             return True
         elif len(submissions) == self.max_attempts:
+            self.try_save_completed("max_length", messages, state)
             return True
         return False
 
@@ -75,6 +82,33 @@ class TestsEnv(vf.MultiTurnEnv):
             ], state
         else:
             return [{"role": "user", "content": prompts.ERR_EMPTY_OUTPUT}], state
+
+    def try_save_completed(
+        self, finish_reason: str, messages: vf.Messages, state: vf.State
+    ):
+        # TODO: this seems really janky and there must be a better way
+        print("rollout finished for reason =", finish_reason)
+        if self.save_completed_in_dir is None:
+            return
+        if not hasattr(self, "_trainer"):
+            return  # this is set in train.py, so we're evaluating
+        try:
+            step: int = self._trainer._step  # type: ignore
+            d = f"{self.save_completed_in_dir}/rollouts/step-{step:05d}"
+            os.makedirs(d, exist_ok=True)
+            with open(d + f"/{time.monotonic_ns()}.json", "w") as f:
+                json.dump(
+                    {
+                        "finish_reason": finish_reason,
+                        "messages": messages,
+                        "state": state,
+                    },
+                    f,
+                    indent=2,
+                )
+        except Exception as _:
+            print("failed to save rollout")
+            traceback.print_exc()
 
 
 def ratio_submissions_ran_reward(state: vf.State) -> float:
@@ -186,6 +220,7 @@ def load_environment(
     max_attempts: int = 3,
     be_honest_in_system_prompt: bool = False,
     use_docker: bool = True,
+    save_completed_in_dir: str | None = None,
 ) -> vf.Environment:
     parser = vf.XMLParser(fields=["reasoning", "code"], answer_field="code")
 
@@ -212,6 +247,7 @@ def load_environment(
         eval_dataset=eval,
         max_attempts=max_attempts,
         use_docker=use_docker,
+        save_completed_in_dir=save_completed_in_dir,
         parser=parser,
         rubric=rubric,
     )
