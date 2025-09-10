@@ -8,16 +8,26 @@ import verifiers as vf
 
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source ~/.local/bin/env
-uv pip install --system verifiers vllm fastapi uvloop wandb deepspeed
-uv pip install --system --no-build-isolation flash-attn==2.8.2 git+https://github.com/Dao-AILab/flash-attention@v2.8.2#subdirectory=csrc/fused_dense_lib
-uv pip install --system -e .
+uv python install python3.12
+uv venv --python python3.12
+uv pip install 'verifiers[all]' vllm fastapi uvloop wandb deepspeed accelerate
+uv pip install flash-attn --no-build-isolation
+uv pip install -e .
 [ -d /workspace ] && export HF_HOME=/workspace/hf
 wandb login
 
-CUDA_VISIBLE_DEVICES=4,5,6,7 vf-vllm --model 'Qwen/Qwen2.5-7B-Instruct' --tensor_parallel_size 4 --max_model_len 4096 \
-    --dtype bfloat16 --gpu_memory_utilization 0.9 --enable_prefix_caching True --host 0.0.0.0 --port 8000
+CUDA_VISIBLE_DEVICES=0,1,2,3 vf-vllm --model 'Qwen/Qwen2.5-7B-Instruct' \
+    --tensor_parallel_size 2 --data-parallel-size 2 \
+    --enforce-eager --disable-log-requests
 
-CUDA_VISIBLE_DEVICES=0,1,2,3 accelerate launch --config-file configs/zero3.yaml train.py
+CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --config-file configs/zero3.yaml train.py
+
+# Nuclear option for NCCL issues
+export NCCL_P2P_DISABLE=1
+export NCCL_IB_DISABLE=1
+export TORCH_NCCL_ENABLE_MONITORING=0
+export TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=0
+export TORCH_NCCL_BLOCKING_WAIT=1
 """
 
 def main(args):
@@ -30,9 +40,11 @@ def main(args):
     run_name = "simple-reward-hack_" + model_name.split("/")[-1].lower()
 
     training_args = vf.grpo_defaults(run_name=run_name)
-    training_args.per_device_train_batch_size = 8
+    training_args.num_iterations = 1
+    training_args.per_device_train_batch_size = 4
     training_args.num_generations = 16
     training_args.gradient_accumulation_steps = 8
+    training_args.max_prompt_length = 1024
     training_args.max_tokens = 1024  # per turn
     training_args.max_seq_len = 4096
     training_args.max_steps = 200

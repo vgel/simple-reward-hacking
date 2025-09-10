@@ -13,7 +13,7 @@ machine_rank: 0
 main_training_function: main
 mixed_precision: bf16
 num_machines: 1
-num_processes: 4 # only use 4 processes of the 8 gpus, we give 4,5,6,7 to vllm
+num_processes: 8
 rdzv_backend: static
 same_network: true
 tpu_env: []
