@@ -101,7 +101,7 @@ class TestsEnv(vf.MultiTurnEnv):
                     {
                         "finish_reason": finish_reason,
                         "messages": messages,
-                        "submissions": state["submissions"],
+                        "submissions": [s.model_dump() for s in state["submissions"]],
                         "info": state["info"],
                     },
                     f,
