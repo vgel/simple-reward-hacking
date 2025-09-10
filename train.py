@@ -20,7 +20,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 vf-vllm --model 'Qwen/Qwen2.5-7B-Instruct' \
     --tensor_parallel_size 2 --data-parallel-size 2 \
     --enforce-eager --disable-log-requests
 
-CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --config-file configs/zero3.yaml train.py
+CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --num-processes 4 --config-file configs/zero3.yaml train.py
 
 # Nuclear option for NCCL issues
 export NCCL_P2P_DISABLE=1
