@@ -288,14 +288,10 @@ def plot_eval_steps_labels(
 
 
 # def plot_single_analyses_stacked_bar(files: dict[int, list[RolloutFile]]) -> None:
-#     matplotlib.use("Qt5Agg")
-
 #     fig, ax = plt.subplots(figsize=(12, 6))
 #     b = Breakdown.make(files)
-
 #     plot_bars(b, ax)
 #     plot_eval_steps_labels(b, ax, "Reward hacking", 0)
-
 #     ax.legend(loc="upper right")
 #     plt.tight_layout()
 
@@ -303,7 +299,6 @@ def plot_eval_steps_labels(
 def plot_analyses_stacked_bar(
     files_and_titles: list[tuple[dict[int, list[RolloutFile]], str]],
 ) -> None:
-    matplotlib.use("Qt5Agg")
 
     # Create Nx2 subplot grid
     rows = int(np.ceil(len(files_and_titles) / 2))
@@ -349,6 +344,8 @@ if __name__ == "__main__":
     titles_and_analyses = [
         (load_rollouts(pathlib.Path(path)), title) for title, path in titles_and_paths
     ]
-    plot_analyses_stacked_bar(titles_and_analyses)
 
+    # matplotlib.use("Qt5Agg")
+    plot_analyses_stacked_bar(titles_and_analyses)
+    # plt.show()
     plt.savefig("imgs/stacked.png")
