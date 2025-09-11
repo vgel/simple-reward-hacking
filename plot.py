@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import os
 import pathlib
 import sys
 import tarfile
@@ -13,6 +14,10 @@ import numpy as np
 from pydantic import BaseModel
 
 from vf_simple_reward_hacking.submission import Submission
+
+# hack because the other hack screwed up
+# merge steps over gradient accumulation steps
+GRADIENT_ACCUMULATION_STEPS = int(os.environ["GRADIENT_ACCUMULATION_STEPS"])
 
 
 class RolloutInfo(BaseModel):
@@ -46,7 +51,9 @@ def load_rollouts(rollouts_path: pathlib.Path) -> dict[int, list[RolloutFile]]:
     rollout_files.sort(key=lambda f: (f.step, f.timestamp))
     ret: dict[int, list[RolloutFile]] = {}
     for f in rollout_files:
-        ret.setdefault(f.step, []).append(f)
+        real_step = f.step // GRADIENT_ACCUMULATION_STEPS
+        f.step = real_step
+        ret.setdefault(real_step, []).append(f)
     return ret
 
 
@@ -299,7 +306,6 @@ def plot_eval_steps_labels(
 def plot_analyses_stacked_bar(
     files_and_titles: list[tuple[dict[int, list[RolloutFile]], str]],
 ) -> None:
-
     # Create Nx2 subplot grid
     rows = int(np.ceil(len(files_and_titles) / 2))
     fig, axs = plt.subplots(rows, 2, figsize=(16, 12))
