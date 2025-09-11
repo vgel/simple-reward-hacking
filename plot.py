@@ -302,7 +302,7 @@ def plot_analyses_stacked_bar(
 
     # Create Nx2 subplot grid
     rows = int(np.ceil(len(files_and_titles) / 2))
-    fig, axs = plt.subplots(rows, 2, figsize=(8 * rows, 12))
+    fig, axs = plt.subplots(rows, 2, figsize=(16, 12))
     axs = axs.ravel()  # Flatten to make it easier to iterate
 
     legend_handles = []
