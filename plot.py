@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pydantic import BaseModel
 
-from .submission import Submission
+from vf_simple_reward_hacking.submission import Submission
 
 
 class RolloutInfo(BaseModel):
