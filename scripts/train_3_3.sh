@@ -15,5 +15,5 @@ for i in $(seq 3); do
     scripts/train.sh
     pkill vllm
     sleep 60
-    mv outputs "outputs.plain.${i}"
+    mv outputs "outputs.honest.${i}"
 done

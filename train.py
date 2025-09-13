@@ -3,39 +3,6 @@ import json
 
 import verifiers as vf
 
-"""
-# Multi-GPU training (single node, 4 training + 4 inference)
-
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source ~/.local/bin/env
-uv python install python3.12
-uv venv --python python3.12
-uv pip install 'verifiers[all]' vllm fastapi uvloop wandb deepspeed accelerate
-uv pip install flash-attn --no-build-isolation
-uv pip install -e .
-[ -d /workspace ] && export HF_HOME=/workspace/hf
-wandb login
-
-CUDA_VISIBLE_DEVICES=0,1,2,3 vf-vllm --model 'Qwen/Qwen2.5-7B-Instruct' \
-    --tensor_parallel_size 2 --data-parallel-size 2 \
-    --enforce-eager --disable-log-requests
-
-CUDA_VISIBLE_DEVICES=4,5,6,7 accelerate launch --num-processes 4 --config-file configs/zero3.yaml train.py
-
-# Nuclear option for NCCL issues
-export NCCL_P2P_DISABLE=1
-export NCCL_IB_DISABLE=1
-export TORCH_NCCL_ENABLE_MONITORING=0
-export TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=0
-export TORCH_NCCL_BLOCKING_WAIT=1
-
-# Known working versions
-flash-attn==2.6.1
-vllm==0.8.5.post1
-verifiers==0.1.3.post0
-"""
-
-
 def main(args):
     model_name = args.model
     env_args = json.loads(args.env_args)
