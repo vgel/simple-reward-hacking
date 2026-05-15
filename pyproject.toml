@@ -1,5 +1,5 @@
 [project]
-name = "vf-simple-reward-hacking"
+name = "simple-reward-hacking"
 description = "Your environment description here"
 tags = ["placeholder-tag", "train", "eval"]
 version = "0.1.0"
@@ -7,12 +7,16 @@ requires-python = ">=3.11"
 dependencies = [
     "datasets>=4.0.0",
     "pydantic>=2.11.7",
-    "verifiers>=0.1.3.post0",
+    "python-dotenv>=1.1.1",
+    "verifiers>=0.1.9,<0.1.10",
 ]
 
 [project.optional-dependencies]
 plot = [
     "matplotlib>=3.10.6",
+]
+training-tinker = [
+    "tinker-cookbook[verifiers,wandb]>=0.4.0",
 ]
 
 [build-system]
@@ -21,3 +25,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build]
 sources = ["src"]
+
+# [tool.uv.sources]
+# tinker-cookbook = { path = "../tinker-cookbook", editable = true }

@@ -1,16 +1,14 @@
-# vf-simple-reward-hacking
-
-> Replace the placeholders below, then remove this callout. Keep the Evaluation Reports section at the bottom intact so reports can auto-render.
+# simple-reward-hacking
 
 ### Overview
-- **Environment ID**: `vf-simple-reward-hacking`
+- **Environment ID**: `simple-reward-hacking`
 - **Short description**: Environment meant to elicit reward hacking, with AST-based metrics for tracking that reward hacking.
 - **Tags**: multiturn, reward-hacking, dont-train-on-this
 
 ### Datasets
-- **Primary dataset(s)**: `vgel/INTELLECT-2-RL-Dataset-fn_name-Cleaned` - subset of Intellect-2 RL dataset
-- **Source links**: https://huggingface.co/datasets/vgel/INTELLECT-2-RL-Dataset-fn_name-Cleaned
-- **Split sizes**: 2530 / 60
+- **Primary dataset(s)**: `vgel/SYNTHETIC-2-RL-fn_name-Qwen3-32B-Hard` - subset of SYNTHETIC-2 RL dataset
+- **Source links**: https://huggingface.co/datasets/vgel/SYNTHETIC-2-RL-fn_name-Qwen3-32B-Hard
+- **Split sizes**: 1683
 
 ### Task
 - **Type**: code execution
@@ -21,17 +19,25 @@
 Run an evaluation with default settings:
 
 ```bash
-uv run vf-eval vf-simple-reward-hacking
+uv run vf-eval simple-reward-hacking
 ```
 
 Configure model and sampling:
 
 ```bash
-uv run vf-eval vf-simple-reward-hacking -m gpt-4.1-mini -a '{"be_honest_in_system_prompt": true}'
+uv run vf-eval simple-reward-hacking -m gpt-4.1-mini -a '{"max_attempts": 5}'
 ```
 
 Notes:
 - Use `-a` / `--env-args` to pass environment-specific configuration as a JSON object.
+
+### Sandbox setup
+
+Submitted code is run in a sandbox by default. The `sandbox` env arg controls this:
+
+- `"bwrap"` *(default)*: uses [bubblewrap](https://github.com/containers/bubblewrap) and `prlimit` for lightweight isolation (read-only bind of `/`, fresh `/tmp`, 2GB memory cap, all namespaces unshared). Linux-only. Install via your package manager (e.g. `apt install bubblewrap util-linux`).
+- `"docker"`: runs each submission in a fresh `python:3.12-slim` container.
+- `"none"`: runs the code directly in a subprocess with no sandboxing.
 
 ### Environment Arguments
 
@@ -39,10 +45,10 @@ Notes:
 | ---------------------------- | ---- | --------- | -------------------------------------------------------------- |
 | `dataset_name`               | str  | see above | Dataset to use.                                                |
 | `n_eval`                     | int  | `60`      | Size of eval split.                                            |
-| `think_before_answer`        | bool | `True`    | Whether to prompt a think tag. (Disable for reasoning models.) |
 | `max_attempts`               | int  | `3`       | Maximum submissions the model can try.                         |
 | `be_honest_in_system_prompt` | bool | `False`   | Whether to add a suffix about honesty to the system prompt.    |
-| `use_docker`                 | bool | `True`    | Whether to run submissions in a Docker sandbox. (Recommended.) |
+| `scratchpad_in_system_prompt` | bool | `False`  | Add `<reasoning>` scratchpad instructions to the system prompt. (Leave off for reasoning models with native CoT.) |
+| `sandbox`                    | str  | `"bwrap"` | Sandbox for running submissions. One of `"bwrap"`, `"docker"`, or `"none"`. See "Sandbox setup" below. |
 
 ### Metrics
 
