@@ -31,6 +31,14 @@ uv run vf-eval simple-reward-hacking -m gpt-4.1-mini -a '{"max_attempts": 5}'
 Notes:
 - Use `-a` / `--env-args` to pass environment-specific configuration as a JSON object.
 
+### Sandbox setup
+
+Submitted code is run in a sandbox by default. The `sandbox` env arg controls this:
+
+- `"bwrap"` *(default)*: uses [bubblewrap](https://github.com/containers/bubblewrap) and `prlimit` for lightweight isolation (read-only bind of `/`, fresh `/tmp`, 2GB memory cap, all namespaces unshared). Linux-only. Install via your package manager (e.g. `apt install bubblewrap util-linux`).
+- `"docker"`: runs each submission in a fresh `python:3.12-slim` container.
+- `"none"`: runs the code directly in a subprocess with no sandboxing.
+
 ### Environment Arguments
 
 | Arg                          | Type | Default   | Description                                                    |
@@ -40,7 +48,7 @@ Notes:
 | `max_attempts`               | int  | `3`       | Maximum submissions the model can try.                         |
 | `be_honest_in_system_prompt` | bool | `False`   | Whether to add a suffix about honesty to the system prompt.    |
 | `scratchpad_in_system_prompt` | bool | `False`  | Add `<reasoning>` scratchpad instructions to the system prompt. (Leave off for reasoning models with native CoT.) |
-| `use_docker`                 | bool | `True`    | Whether to run submissions in a Docker sandbox. (Recommended.) |
+| `sandbox`                    | str  | `"bwrap"` | Sandbox for running submissions. One of `"bwrap"`, `"docker"`, or `"none"`. See "Sandbox setup" below. |
 
 ### Metrics
 
