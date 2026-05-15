@@ -1,8 +1,8 @@
 [project]
 name = "simple-reward-hacking"
-description = "Your environment description here"
-tags = ["placeholder-tag", "train", "eval"]
-version = "0.1.0"
+description = "Code-execution environment designed to elicit reward hacking, with AST-based hack-detection metrics."
+tags = ["multiturn", "reward-hacking", "dont-train-on-this", "code", "train", "eval"]
+version = "0.2.0"
 requires-python = ">=3.11"
 dependencies = [
     "datasets>=4.0.0",
