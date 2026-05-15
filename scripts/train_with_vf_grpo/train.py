@@ -1,14 +1,17 @@
+# type: ignore
+
 import argparse
 import json
 
 import verifiers as vf
+
 
 def main(args):
     model_name = args.model
     env_args = json.loads(args.env_args)
 
     model, tokenizer = vf.get_model_and_tokenizer(model_name)
-    vf_env = vf.load_environment(env_id="vf-simple-reward-hacking", **env_args)
+    vf_env = vf.load_environment(env_id="simple-reward-hacking", **env_args)
 
     run_name = (
         "simple-reward-hack_"

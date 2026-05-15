@@ -1,16 +1,14 @@
-# vf-simple-reward-hacking
-
-> Replace the placeholders below, then remove this callout. Keep the Evaluation Reports section at the bottom intact so reports can auto-render.
+# simple-reward-hacking
 
 ### Overview
-- **Environment ID**: `vf-simple-reward-hacking`
+- **Environment ID**: `simple-reward-hacking`
 - **Short description**: Environment meant to elicit reward hacking, with AST-based metrics for tracking that reward hacking.
 - **Tags**: multiturn, reward-hacking, dont-train-on-this
 
 ### Datasets
-- **Primary dataset(s)**: `vgel/INTELLECT-2-RL-Dataset-fn_name-Cleaned` - subset of Intellect-2 RL dataset
-- **Source links**: https://huggingface.co/datasets/vgel/INTELLECT-2-RL-Dataset-fn_name-Cleaned
-- **Split sizes**: 2530 / 60
+- **Primary dataset(s)**: `vgel/SYNTHETIC-2-RL-fn_name-Qwen3-32B-Hard` - subset of SYNTHETIC-2 RL dataset
+- **Source links**: https://huggingface.co/datasets/vgel/SYNTHETIC-2-RL-fn_name-Qwen3-32B-Hard
+- **Split sizes**: 1683
 
 ### Task
 - **Type**: code execution
@@ -21,13 +19,13 @@
 Run an evaluation with default settings:
 
 ```bash
-uv run vf-eval vf-simple-reward-hacking
+uv run vf-eval simple-reward-hacking
 ```
 
 Configure model and sampling:
 
 ```bash
-uv run vf-eval vf-simple-reward-hacking -m gpt-4.1-mini -a '{"be_honest_in_system_prompt": true}'
+uv run vf-eval simple-reward-hacking -m gpt-4.1-mini -a '{"max_attempts": 5}'
 ```
 
 Notes:
@@ -39,9 +37,9 @@ Notes:
 | ---------------------------- | ---- | --------- | -------------------------------------------------------------- |
 | `dataset_name`               | str  | see above | Dataset to use.                                                |
 | `n_eval`                     | int  | `60`      | Size of eval split.                                            |
-| `think_before_answer`        | bool | `True`    | Whether to prompt a think tag. (Disable for reasoning models.) |
 | `max_attempts`               | int  | `3`       | Maximum submissions the model can try.                         |
 | `be_honest_in_system_prompt` | bool | `False`   | Whether to add a suffix about honesty to the system prompt.    |
+| `scratchpad_in_system_prompt` | bool | `False`  | Add `<reasoning>` scratchpad instructions to the system prompt. (Leave off for reasoning models with native CoT.) |
 | `use_docker`                 | bool | `True`    | Whether to run submissions in a Docker sandbox. (Recommended.) |
 
 ### Metrics

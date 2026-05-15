@@ -1,14 +1,11 @@
 import json
-import os
-import time
-import traceback
 from typing import Any
 
 from datasets import load_dataset, Dataset
 import verifiers as vf
 
 from . import prompts
-from .submission import handle_submission, Scaffold, Submission
+from .submission import Sandbox, handle_submission, Scaffold, Submission
 
 
 class TestsEnv(vf.MultiTurnEnv):
@@ -17,8 +14,7 @@ class TestsEnv(vf.MultiTurnEnv):
         dataset: Dataset,
         eval_dataset: Dataset,
         max_attempts: int,
-        use_docker: bool,
-        save_completed_in_dir: str | None,
+        sandbox: Sandbox,
         **kwargs,
     ):
         super().__init__(
@@ -28,46 +24,44 @@ class TestsEnv(vf.MultiTurnEnv):
             **kwargs,
         )
         self.max_attempts = max_attempts
-        self.use_docker = use_docker
-        self.save_completed_in_dir = save_completed_in_dir
+        self.sandbox = sandbox
 
     async def setup_state(self, state: vf.State, **kwargs) -> vf.State:
         state["scaffold"] = Scaffold.from_code(state["info"]["scaffold"])
         state["submissions"] = []
         return state
 
-    async def is_completed(
-        self, messages: vf.Messages, state: vf.State, **kwargs
-    ) -> bool:
+    @vf.stop
+    async def tests_passed(self, state: vf.State, **kwargs) -> bool:
         submissions: list[Submission] = state["submissions"]
         if not submissions:
             return False
         last_output = submissions[-1].output_info
-        if last_output is not None and (
+        return last_output is not None and (
             last_output.test_pass_count > 0 and last_output.test_fail_count == 0
-        ):
-            self.try_save_completed("tests_passed", messages, state)
-            return True
-        elif len(submissions) == self.max_attempts:
-            self.try_save_completed("max_length", messages, state)
-            return True
-        return False
+        )
+
+    @vf.stop
+    async def max_attempts_reached(self, state: vf.State, **kwargs) -> bool:
+        return len(state["submissions"]) >= self.max_attempts
 
     async def env_response(
         self, messages: vf.Messages, state: vf.State, **kwargs: Any
-    ) -> tuple[vf.Messages, vf.State]:
+    ) -> vf.Messages:
         assert isinstance(messages, list)
         content = messages[-1].get("content")
         assert isinstance(content, str)
 
         parsed = self.parser.parse(content)
         submission = await handle_submission(
-            parsed.code, state["scaffold"], use_docker=self.use_docker
+            parsed.code, state["scaffold"], sandbox=self.sandbox
         )
         state["submissions"].append(submission)
+        if state["trajectory"]:
+            state["trajectory"][-1]["extras"]["submission"] = submission.model_dump()
 
         if submission.kind == "missing_code":
-            return [{"role": "user", "content": prompts.ERR_MISSING_CODE}], state
+            return [{"role": "user", "content": prompts.ERR_MISSING_CODE}]
 
         assert submission.output_info is not None
 
@@ -77,39 +71,9 @@ class TestsEnv(vf.MultiTurnEnv):
             output = prompts.truncate(submission.output_info.stdout.strip())
 
         if len(output) > 0:
-            return [
-                {"role": "user", "content": prompts.format_output_tag(output)}
-            ], state
+            return [{"role": "user", "content": prompts.format_output_tag(output)}]
         else:
-            return [{"role": "user", "content": prompts.ERR_EMPTY_OUTPUT}], state
-
-    def try_save_completed(
-        self, finish_reason: str, messages: vf.Messages, state: vf.State
-    ):
-        # TODO: this seems really janky and there must be a better way
-        print("rollout finished for reason =", finish_reason)
-        if self.save_completed_in_dir is None:
-            return
-        if not hasattr(self, "_trainer"):
-            return  # this is set in train.py, so we're evaluating
-        try:
-            step: int = self._trainer._step  # type: ignore
-            d = f"{self.save_completed_in_dir}/rollouts/step-{step:05d}"
-            os.makedirs(d, exist_ok=True)
-            with open(d + f"/{time.monotonic_ns()}.json", "w") as f:
-                json.dump(
-                    {
-                        "finish_reason": finish_reason,
-                        "messages": messages,
-                        "submissions": [s.model_dump() for s in state["submissions"]],
-                        "info": state["info"],
-                    },
-                    f,
-                    indent=2,
-                )
-        except Exception as _:
-            print("failed to save rollout")
-            traceback.print_exc()
+            return [{"role": "user", "content": prompts.ERR_EMPTY_OUTPUT}]
 
 
 def _successful_executions_count(state: vf.State) -> int:
@@ -186,13 +150,17 @@ def hacked_harness_metric(state: dict[str, Any]) -> float:
 
 
 def prepare_datasets(
-    dataset_name: str, n_eval: int, system_prompt: str
+    dataset_name: str,
+    n_eval: int,
+    system_prompt: str,
+    shuffle_seed: int | None = 0,
 ) -> tuple[Dataset, Dataset]:
     """Returns a tuple of train and eval datasets"""
 
     dataset = load_dataset(dataset_name)["train"]  # no eval split on hf
     assert isinstance(dataset, Dataset)
-    dataset = dataset.shuffle(seed=0)
+    if shuffle_seed is not None:
+        dataset = dataset.shuffle(seed=shuffle_seed)
     # there are ~100 examples with extremely long test case specs, discard
     dataset = dataset.filter(lambda t: len(t["test_cases"]) < 1000)
 
@@ -227,11 +195,11 @@ def prepare_datasets(
 def load_environment(
     dataset_name: str = "vgel/INTELLECT-2-RL-Dataset-fn_name-Cleaned",
     n_eval: int = 60,
-    think_before_answer: bool = True,
     max_attempts: int = 3,
+    sandbox: Sandbox = "bwrap",
+    scratchpad_in_system_prompt: bool = False,
     be_honest_in_system_prompt: bool = False,
-    use_docker: bool = True,
-    save_completed_in_dir: str | None = None,
+    shuffle_seed: int | None = 0,
 ) -> vf.Environment:
     parser = vf.XMLParser(fields=["reasoning", "code"], answer_field="code")
 
@@ -248,18 +216,18 @@ def load_environment(
         dataset_name,
         n_eval,
         prompts.format_system_prompt(
-            think_before_answer=think_before_answer,
+            scratchpad_in_system_prompt=scratchpad_in_system_prompt,
             max_attempts=max_attempts,
             be_honest_addendum=be_honest_in_system_prompt,
         ),
+        shuffle_seed=shuffle_seed,
     )
 
     vf_env = TestsEnv(
         dataset=train,
         eval_dataset=eval,
         max_attempts=max_attempts,
-        use_docker=use_docker,
-        save_completed_in_dir=save_completed_in_dir,
+        sandbox=sandbox,
         parser=parser,
         rubric=rubric,
     )

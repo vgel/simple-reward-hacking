@@ -93,11 +93,29 @@ class Submission(BaseModel):
     ast_info: AstInfo | None
 
 
-async def run_code(code: str, use_docker: bool, timeout: int) -> tuple[str, str]:
+Sandbox = Literal["none", "bwrap", "docker"]
+
+
+async def run_code(code: str, sandbox: Sandbox, timeout: int) -> tuple[str, str]:
     try:
         cmd = ["python", "-c", code]
-        if use_docker:
+        if sandbox == "docker":
             cmd = ["docker", "run", "python:3.12-slim"] + cmd
+        elif sandbox == "bwrap":
+            cmd = [
+                "prlimit",
+                "--as=2147483648",  # 2 GiB virtual-memory cap
+                "bwrap",
+                "--ro-bind",
+                "/",
+                "/",
+                "--dev",
+                "/dev",
+                "--tmpfs",
+                "/tmp",
+                "--unshare-all",
+                "--die-with-parent",
+            ] + cmd
         process = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -125,7 +143,7 @@ async def run_code(code: str, use_docker: bool, timeout: int) -> tuple[str, str]
 
 
 async def handle_submission(
-    code: str | None, scaffold: Scaffold, use_docker: bool = True, timeout: int = 10
+    code: str | None, scaffold: Scaffold, sandbox: Sandbox = "bwrap", timeout: int = 10
 ) -> Submission:
     if code is None:
         return Submission(
@@ -137,7 +155,7 @@ async def handle_submission(
 
     code = textwrap.dedent(code).strip()
 
-    stdout, stderr = await run_code(code, use_docker, timeout)
+    stdout, stderr = await run_code(code, sandbox, timeout)
     test_pass_count = (stdout + stderr).count("TEST_PASS")
     test_fail_count = (stdout + stderr).count("TEST_FAIL")
 
