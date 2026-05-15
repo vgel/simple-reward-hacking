@@ -48,7 +48,7 @@ Submitted code is run in a sandbox by default. The `sandbox` env arg controls th
 | `max_attempts`               | int  | `3`       | Maximum submissions the model can try.                         |
 | `be_honest_in_system_prompt` | bool | `False`   | Whether to add a suffix about honesty to the system prompt.    |
 | `scratchpad_in_system_prompt` | bool | `False`  | Add `<reasoning>` scratchpad instructions to the system prompt. (Leave off for reasoning models with native CoT.) |
-| `sandbox`                    | str  | `"bwrap"` | Sandbox for running submissions. One of `"bwrap"`, `"docker"`, or `"none"`. See "Sandbox setup" below. |
+| `sandbox`                    | str  | `"bwrap"` | Sandbox for running submissions. One of `"bwrap"`, `"docker"`, or `"none"`. See "Sandbox setup" above. |
 
 ### Metrics
 
