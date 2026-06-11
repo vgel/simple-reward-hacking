@@ -153,11 +153,11 @@ def prepare_datasets(
     dataset_name: str,
     n_eval: int,
     system_prompt: str,
-    shuffle_seed: int | None = 0,
+    shuffle_seed: int | None,
 ) -> tuple[Dataset, Dataset]:
     """Returns a tuple of train and eval datasets"""
 
-    dataset = load_dataset(dataset_name)["train"]  # no eval split on hf
+    dataset = load_dataset(dataset_name)["train"]
     assert isinstance(dataset, Dataset)
     if shuffle_seed is not None:
         dataset = dataset.shuffle(seed=shuffle_seed)
@@ -166,10 +166,16 @@ def prepare_datasets(
 
     def format_dataset(x):
         fn_name = x["fn_name"]
+        assert isinstance(fn_name, str)
         test_cases = json.loads(x["test_cases"])
+        assert isinstance(test_cases, dict)
+        prompt = x["prompt"]
+        assert isinstance(prompt, str)
+
         scaffold = prompts.format_scaffold(
             fn_name, list(zip(test_cases["inputs"], test_cases["outputs"]))
         )
+        formatted_prompt = prompts.format_user_prompt(problem=prompt, scaffold=scaffold)
         x["prompt"] = [
             {
                 "role": "system",
@@ -177,12 +183,11 @@ def prepare_datasets(
             },
             {
                 "role": "user",
-                "content": prompts.format_user_prompt(
-                    problem=x["prompt"], scaffold=scaffold
-                ),
+                "content": formatted_prompt,
             },
         ]
         x["info"] = {}
+        x["info"]["raw_prompt"] = prompt
         x["info"]["fn_name"] = x["fn_name"]
         x["info"]["test_cases"] = x["test_cases"]
         x["info"]["scaffold"] = scaffold
@@ -200,7 +205,7 @@ def load_environment(
     scratchpad_in_system_prompt: bool = False,
     scratchpad_tag: str = "think",
     be_honest_in_system_prompt: bool = False,
-    shuffle_seed: int | None = 0,
+    shuffle_seed: int | None = None,
 ) -> vf.Environment:
     parser = vf.XMLParser(fields=[scratchpad_tag, "code"], answer_field="code")
 
