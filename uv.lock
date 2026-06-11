@@ -7,6 +7,10 @@ resolution-markers = [
     "python_full_version < '3.12'",
 ]
 
+[options]
+exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
+exclude-newer-span = "-P14D"
+
 [[package]]
 name = "aiofiles"
 version = "25.1.0"
@@ -2875,7 +2879,7 @@ wheels = [
 
 [[package]]
 name = "simple-reward-hacking"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "datasets" },
@@ -2898,7 +2902,7 @@ requires-dist = [
     { name = "matplotlib", marker = "extra == 'plot'", specifier = ">=3.10.6" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
-    { name = "tinker-cookbook", extras = ["verifiers", "wandb"], marker = "extra == 'training-tinker'", editable = "../tinker-cookbook" },
+    { name = "tinker-cookbook", extras = ["verifiers", "wandb"], marker = "extra == 'training-tinker'", specifier = ">=0.4.0" },
     { name = "verifiers", specifier = ">=0.1.9,<0.1.10" },
 ]
 provides-extras = ["plot", "training-tinker"]
@@ -3080,7 +3084,8 @@ wheels = [
 
 [[package]]
 name = "tinker-cookbook"
-source = { editable = "../tinker-cookbook" }
+version = "0.4.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
@@ -3101,6 +3106,10 @@ dependencies = [
     { name = "tqdm" },
     { name = "transformers" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/e5/9c/37af9804cb3f1d88f5e67512aa1aeafeb49ef9012532d056d92c96194320/tinker_cookbook-0.4.1.tar.gz", hash = "sha256:1f9ad977317529bbf796f40ef13de59b2c93a0a257469bd80a7ffcfed5beb8b2", size = 4517724, upload-time = "2026-05-12T03:49:19.6Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/98/41/989cc9b1ba67edcaff46fa2d5c9c63e57f3f85cbd0226472660ed01852ce/tinker_cookbook-0.4.1-py3-none-any.whl", hash = "sha256:1776e82470534e47d8923378ea41d4c7e47a1ffdfcb1982507dfd0289ba9a70b", size = 867915, upload-time = "2026-05-12T03:49:17.569Z" },
+]
 
 [package.optional-dependencies]
 verifiers = [
@@ -3111,98 +3120,6 @@ wandb = [
     { name = "plotly" },
     { name = "wandb" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "adlfs", marker = "extra == 'cloud'", specifier = ">=2023.1.0" },
-    { name = "aiohttp", specifier = ">=3.9.0" },
-    { name = "antlr4-python3-runtime", marker = "extra == 'all'", specifier = ">=4.11,<4.14" },
-    { name = "antlr4-python3-runtime", marker = "extra == 'eval'", specifier = ">=4.11,<4.14" },
-    { name = "antlr4-python3-runtime", marker = "extra == 'eval-hmmt'", specifier = ">=4.11,<4.14" },
-    { name = "anyio", specifier = ">=4.0.0" },
-    { name = "blobfile", specifier = ">=3.0.0" },
-    { name = "chromadb", marker = "extra == 'all'", specifier = ">=1.0.0" },
-    { name = "chromadb", marker = "extra == 'vector-search'", specifier = ">=1.0.0" },
-    { name = "chz", specifier = ">=0.4.0" },
-    { name = "cloudpickle", specifier = ">=3.0.0" },
-    { name = "datasets", specifier = ">=2.14.0" },
-    { name = "emoji", marker = "extra == 'all'" },
-    { name = "emoji", marker = "extra == 'eval'" },
-    { name = "emoji", marker = "extra == 'eval-ifbench'" },
-    { name = "fsspec", marker = "extra == 'cloud'", specifier = ">=2023.1.0" },
-    { name = "gcsfs", marker = "extra == 'cloud'", specifier = ">=2023.1.0" },
-    { name = "google-genai", marker = "extra == 'all'", specifier = ">=1.0.0" },
-    { name = "google-genai", marker = "extra == 'vector-search'", specifier = ">=1.0.0" },
-    { name = "huggingface-hub", specifier = ">=0.20.0" },
-    { name = "huggingface-hub", marker = "extra == 'all'", specifier = ">=0.20.0" },
-    { name = "huggingface-hub", marker = "extra == 'vector-search'", specifier = ">=0.20.0" },
-    { name = "inspect-ai", marker = "extra == 'all'", specifier = ">=0.3.100" },
-    { name = "inspect-ai", marker = "extra == 'inspect'", specifier = ">=0.3.100" },
-    { name = "inspect-evals", marker = "extra == 'all'", specifier = ">=0.3.106" },
-    { name = "inspect-evals", marker = "extra == 'inspect'", specifier = ">=0.3.106" },
-    { name = "langdetect", marker = "extra == 'all'" },
-    { name = "langdetect", marker = "extra == 'eval'" },
-    { name = "langdetect", marker = "extra == 'eval-ifbench'" },
-    { name = "litellm", marker = "extra == 'all'", specifier = ">=1.80.0,!=1.82.7,!=1.82.8" },
-    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.80.0,!=1.82.7,!=1.82.8" },
-    { name = "math-verify", marker = "extra == 'all'", specifier = ">=0.5.0" },
-    { name = "math-verify", marker = "extra == 'eval'", specifier = ">=0.5.0" },
-    { name = "math-verify", marker = "extra == 'eval-math500'", specifier = ">=0.5.0" },
-    { name = "math-verify", marker = "extra == 'math-rl'", specifier = ">=0.5.0" },
-    { name = "modal", marker = "extra == 'all'", specifier = ">=1.0.0" },
-    { name = "modal", marker = "extra == 'eval'", specifier = ">=1.0.0" },
-    { name = "modal", marker = "extra == 'eval-livecodebench'", specifier = ">=1.0.0" },
-    { name = "modal", marker = "extra == 'eval-mbpp'", specifier = ">=1.0.0" },
-    { name = "modal", marker = "extra == 'eval-swe-bench'", specifier = ">=1.0.0" },
-    { name = "modal", marker = "extra == 'eval-terminal-bench'", specifier = ">=1.0.0" },
-    { name = "modal", marker = "extra == 'modal'", specifier = ">=1.0.0" },
-    { name = "neptune-scale", marker = "extra == 'all'", specifier = ">=0.27.0" },
-    { name = "neptune-scale", marker = "extra == 'neptune-scale'", specifier = ">=0.27.0" },
-    { name = "nltk", marker = "extra == 'all'" },
-    { name = "nltk", marker = "extra == 'eval'" },
-    { name = "nltk", marker = "extra == 'eval-ifbench'" },
-    { name = "numpy", specifier = ">=1.24.0" },
-    { name = "openai", marker = "extra == 'all'", specifier = ">=1.0.0" },
-    { name = "openai", marker = "extra == 'verifiers'", specifier = ">=1.0.0" },
-    { name = "pillow", specifier = ">=10.0.0" },
-    { name = "plotly", marker = "extra == 'all'", specifier = ">=5.0.0" },
-    { name = "plotly", marker = "extra == 'wandb'", specifier = ">=5.0.0" },
-    { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pylatexenc", marker = "extra == 'all'", specifier = ">=2.0" },
-    { name = "pylatexenc", marker = "extra == 'eval'", specifier = ">=2.0" },
-    { name = "pylatexenc", marker = "extra == 'eval-math500'", specifier = ">=2.0" },
-    { name = "pylatexenc", marker = "extra == 'math-rl'", specifier = ">=2.0" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.300" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
-    { name = "pytest-timeout", marker = "extra == 'dev'", specifier = ">=2.0.0" },
-    { name = "rich", specifier = ">=13.0.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0" },
-    { name = "s3fs", marker = "extra == 'cloud'", specifier = ">=2023.1.0" },
-    { name = "safetensors", specifier = ">=0.4.0" },
-    { name = "syllapy", marker = "extra == 'all'" },
-    { name = "syllapy", marker = "extra == 'eval'" },
-    { name = "syllapy", marker = "extra == 'eval-ifbench'" },
-    { name = "sympy", marker = "extra == 'all'", specifier = ">=1.12.0" },
-    { name = "sympy", marker = "extra == 'eval'", specifier = ">=1.12.0" },
-    { name = "sympy", marker = "extra == 'eval-math500'", specifier = ">=1.12.0" },
-    { name = "sympy", marker = "extra == 'math-rl'", specifier = ">=1.12.0" },
-    { name = "termcolor", specifier = ">=2.0.0" },
-    { name = "textarena", marker = "extra == 'all'", specifier = ">=0.7.4" },
-    { name = "textarena", marker = "extra == 'multiplayer-rl'", specifier = ">=0.7.4" },
-    { name = "tiktoken", specifier = ">=0.12.0" },
-    { name = "tinker", specifier = ">=0.20.0" },
-    { name = "torch", specifier = ">=2.0" },
-    { name = "tqdm", specifier = ">=4.60.0" },
-    { name = "trackio", marker = "extra == 'all'", specifier = "<1.0.0" },
-    { name = "trackio", marker = "extra == 'trackio'", specifier = "<1.0.0" },
-    { name = "transformers", specifier = ">=4.57.6,<=5.5.3" },
-    { name = "verifiers", marker = "extra == 'all'", specifier = ">=0.1.9,<0.1.10" },
-    { name = "verifiers", marker = "extra == 'verifiers'", specifier = ">=0.1.9,<0.1.10" },
-    { name = "wandb", marker = "extra == 'all'", specifier = ">=0.16.0" },
-    { name = "wandb", marker = "extra == 'wandb'", specifier = ">=0.16.0" },
-]
-provides-extras = ["all", "cloud", "dev", "eval", "eval-hmmt", "eval-ifbench", "eval-livecodebench", "eval-math500", "eval-mbpp", "eval-swe-bench", "eval-terminal-bench", "inspect", "litellm", "math-rl", "modal", "multiplayer-rl", "neptune-scale", "trackio", "vector-search", "verifiers", "wandb"]
 
 [[package]]
 name = "tokenizers"
