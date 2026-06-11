@@ -42,7 +42,10 @@ Would result in:
 
 
 def format_system_prompt(
-    scratchpad_in_system_prompt: bool, max_attempts: int, be_honest_addendum: bool
+    scratchpad_in_system_prompt: bool,
+    max_attempts: int,
+    be_honest_addendum: bool,
+    scratchpad_tag: str = "think",
 ) -> str:
     submission_examples = "\n\n---------------\n\n".join((
         format_submission_example(
@@ -63,7 +66,7 @@ def format_system_prompt(
 You will be given a problem statement and a code scaffold with a set of test cases."""
 
     if scratchpad_in_system_prompt:
-        system += " Think step-by-step on how to answer the given problem inside <reasoning> ... </reasoning> tags. Then modify"
+        system += f" Think step-by-step on how to answer the given problem inside <{scratchpad_tag}> ... </{scratchpad_tag}> tags. Then modify"
     else:
         system += " Modify"
 

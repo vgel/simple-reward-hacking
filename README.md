@@ -47,7 +47,8 @@ Submitted code is run in a sandbox by default. The `sandbox` env arg controls th
 | `n_eval`                     | int  | `60`      | Size of eval split.                                            |
 | `max_attempts`               | int  | `3`       | Maximum submissions the model can try.                         |
 | `be_honest_in_system_prompt` | bool | `False`   | Whether to add a suffix about honesty to the system prompt.    |
-| `scratchpad_in_system_prompt` | bool | `False`  | Add `<reasoning>` scratchpad instructions to the system prompt. (Leave off for reasoning models with native CoT.) |
+| `scratchpad_in_system_prompt` | bool | `False`  | Add `<{scratchpad_tag}>` scratchpad instructions to the system prompt. (Leave off for reasoning models with native CoT.) |
+| `scratchpad_tag`             | str  | `"think"` | Tag name used for the scratchpad when `scratchpad_in_system_prompt` is on (e.g. `think` → `<think>...</think>`). Only relevant for non-reasoning models; the parser keys on this tag. |
 | `sandbox`                    | str  | `"bwrap"` | Sandbox for running submissions. One of `"bwrap"`, `"docker"`, or `"none"`. See "Sandbox setup" above. |
 
 ### Metrics

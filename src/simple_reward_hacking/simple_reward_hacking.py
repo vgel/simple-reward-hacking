@@ -198,10 +198,11 @@ def load_environment(
     max_attempts: int = 3,
     sandbox: Sandbox = "bwrap",
     scratchpad_in_system_prompt: bool = False,
+    scratchpad_tag: str = "think",
     be_honest_in_system_prompt: bool = False,
     shuffle_seed: int | None = 0,
 ) -> vf.Environment:
-    parser = vf.XMLParser(fields=["reasoning", "code"], answer_field="code")
+    parser = vf.XMLParser(fields=[scratchpad_tag, "code"], answer_field="code")
 
     rubric = vf.Rubric(parser=parser)
     rubric.add_reward_func(test_pass_reward, 1.0)
@@ -219,6 +220,7 @@ def load_environment(
             scratchpad_in_system_prompt=scratchpad_in_system_prompt,
             max_attempts=max_attempts,
             be_honest_addendum=be_honest_in_system_prompt,
+            scratchpad_tag=scratchpad_tag,
         ),
         shuffle_seed=shuffle_seed,
     )
